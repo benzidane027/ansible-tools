@@ -2,7 +2,7 @@
  	"mysql": {
  		"host": "mysql:3306",
  		"user": "semaphore",
- 		"pass": "secret-password",
+ 		"pass": "bdklriorjgptoh",
  		"name": "semaphore",
  		"options": null
  	},
@@ -24,9 +24,9 @@
  	"port": "",
  	"interface": "",
  	"tmp_path": "/tmp/semaphore",
- 	"cookie_hash": "OeOvCBFUQQMMTG4fUL9hvqiFLwq/JGDSuZKoxwFJamU=",
- 	"cookie_encryption": "w6VUJarhfm4PkUcCwLkLrEBHS/Nt6Ih7YjuMArSsZuc=",
- 	"access_key_encryption": "5TxuyZX6lIn7PRlzm9Bkeg0S8Iov9JtCiSW1u6ZFpJk=",
+ 	"cookie_hash": "RzKe+bU7B362fm0HlhIsl3ZcIBdLQLWLhY26yXL1utw=",
+ 	"cookie_encryption": "VlNta7++MihEwpO0xf9j40MfqEbmV5ZVAOG5O4qpkAE=",
+ 	"access_key_encryption": "wxpBzDS1bXHV/Npo1QPLlMOP4JGyV9sNRlxfX5xP2OA=",
  	"email_sender": "",
  	"email_host": "",
  	"email_port": "",
