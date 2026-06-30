@@ -12,21 +12,27 @@
 
     - name: Add unreachable servers to list
       ansible.builtin.set_fact:
-        failed_servers: "{{ failed_servers | default([]) + [inventory_hostname] }}"
+        failed_servers: "{{ hostvars['localhost']['failed_servers'] | default([]) + [inventory_hostname] }}"
       when: ping_result.unreachable is defined
+      delegate_to: localhost
+      delegate_facts: true
 
     - name: Send email alert
       community.general.mail:
         host: "{{ lookup('env', 'SMTP_HOST') }}"
-        port: "{{ lookup('env', 'SMTP_PORT') | default('587') }}"
+        port: "{{ lookup('env', 'SMTP_PORT') | int }}"
         username: "{{ lookup('env', 'SMTP_USER') }}"
         password: "{{ lookup('env', 'SMTP_PASSWORD') }}"
-        to: "{{ lookup('env', 'ALERT_EMAIL') }}"
+        from: "{{ lookup('env', 'SMTP_USER') }}"
+        to: "{{ lookup('env', 'ALERT_EMAIL').split(',') }}"
         subject: "Ansible Alert: Server unreachable"
         body: |
           The following servers are unreachable:
 
-          {{ failed_servers | join('\n') }}
+          {{ hostvars['localhost']['failed_servers'] | join('\n') }}
+
+        secure: starttls
+
       delegate_to: localhost
       run_once: true
-      when: failed_servers is defined
+      when: hostvars['localhost']['failed_servers'] is defined
