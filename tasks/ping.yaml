@@ -1,8 +1,32 @@
 ---
-- name: Ping all servers
+- name: Ping all servers and alert by email
   hosts: all
   gather_facts: false
 
   tasks:
-    - name: Test connection
+    - name: Test server connection
       ansible.builtin.ping:
+      register: ping_result
+      ignore_unreachable: true
+      ignore_errors: true
+
+    - name: Add unreachable servers to list
+      ansible.builtin.set_fact:
+        failed_servers: "{{ failed_servers | default([]) + [inventory_hostname] }}"
+      when: ping_result.unreachable is defined
+
+    - name: Send email alert
+      community.general.mail:
+        host: "{{ lookup('env', 'SMTP_HOST') }}"
+        port: "{{ lookup('env', 'SMTP_PORT') | default('587') }}"
+        username: "{{ lookup('env', 'SMTP_USER') }}"
+        password: "{{ lookup('env', 'SMTP_PASSWORD') }}"
+        to: "{{ lookup('env', 'ALERT_EMAIL') }}"
+        subject: "Ansible Alert: Server unreachable"
+        body: |
+          The following servers are unreachable:
+
+          {{ failed_servers | join('\n') }}
+      delegate_to: localhost
+      run_once: true
+      when: failed_servers is defined
