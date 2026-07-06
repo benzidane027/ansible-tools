@@ -1,33 +1,58 @@
 ---
-- name: Check Odoo servers
+- name: Check Odoo servers and send alert
   hosts: all
   gather_facts: false
 
+  vars:
+    failed_servers: []
+
   tasks:
 
-    - name: Check SSH connectivity
-      ansible.builtin.ping:
-
-    - name: Check NGINX service
-      ansible.builtin.systemd:
-        name: nginx
-      register: nginx_status
-
-    - name: Verify NGINX is active
-      ansible.builtin.assert:
-        that:
-          - nginx_status.status.ActiveState == "active"
-
-    - name: Check Odoo HTTP endpoint
+    - name: Check Odoo login page
       ansible.builtin.uri:
         url: "{{ odoo_url }}/web/login"
         method: GET
         status_code: 200
-        validate_certs: false
+        return_content: true
         timeout: 10
-      register: web_check
+        validate_certs: false
+      register: odoo_check
+      ignore_errors: true
 
-    - name: Verify login page
-      ansible.builtin.assert:
-        that:
-          - "'Odoo' in web_check.content"
+    - name: Add failed server to alert list
+      ansible.builtin.set_fact:
+        failed_servers: "{{ hostvars['localhost']['failed_servers'] | default([]) + [inventory_hostname ~ ' (' ~ odoo_url ~ ')'] }}"
+      delegate_to: localhost
+      delegate_facts: true
+      when: odoo_check is failed
+
+    - name: Show failed servers
+      ansible.builtin.debug:
+        var: hostvars['localhost']['failed_servers']
+      delegate_to: localhost
+      run_once: true
+
+    - name: Send email alert
+      community.general.mail:
+        host: "{{ lookup('env', 'SMTP_HOST') }}"
+        port: "{{ lookup('env', 'SMTP_PORT') | int }}"
+        username: "{{ lookup('env', 'SMTP_USER') }}"
+        password: "{{ lookup('env', 'SMTP_PASSWORD') }}"
+        from: "{{ lookup('env', 'SMTP_USER') }}"
+        to: "{{ lookup('env', 'ALERT_EMAIL').split(',') }}"
+        subject: "🚨 Odoo Monitoring Alert"
+        body: |
+          The following Odoo servers are not responding:
+
+          {% for server in hostvars['localhost']['failed_servers'] %}
+          - {{ server }}
+          {% endfor %}
+
+          Time: {{ lookup('pipe', 'date') }}
+
+        secure: starttls
+      delegate_to: localhost
+      run_once: true
+      when:
+        - hostvars['localhost']['failed_servers'] is defined
+        - hostvars['localhost']['failed_servers'] | length > 0
