@@ -1,0 +1,16 @@
+---
+- name: Start Odoo and Nginx
+  hosts: all
+  become: false
+  gather_facts: false
+
+  tasks:
+    - name: Start Odoo
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: "{{ ansible_env.HOME }}/server.odoo"
+
+    - name: Start Nginx
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: "{{ ansible_env.HOME }}/server.proxy"

@@ -1,0 +1,16 @@
+---
+- name: Stop Odoo and Nginx
+  hosts: all
+  become: false
+  gather_facts: false
+
+  tasks:
+    - name: Stop Nginx
+      ansible.builtin.command:
+        cmd: docker compose down
+        chdir: "{{ ansible_env.HOME }}/server.proxy"
+
+    - name: Stop Odoo
+      ansible.builtin.command:
+        cmd: docker compose down
+        chdir: "{{ ansible_env.HOME }}/server.odoo"
