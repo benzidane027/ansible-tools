@@ -4,7 +4,7 @@
   gather_facts: false
 
   vars:
-    odoo_service: odoo17
+    odoo_service: odoos
     odoo_url: "http://{{ ansible_host }}/web/login"
 
   tasks:
