@@ -8,9 +8,9 @@
     - name: Stop Nginx
       ansible.builtin.command:
         cmd: docker compose down
-        chdir: "{{ ansible_env.HOME }}/server.proxy"
+        chdir: "/home/{{ ansible_user }}/server.proxy"
 
     - name: Stop Odoo
       ansible.builtin.command:
         cmd: docker compose down
-        chdir: "{{ ansible_env.HOME }}/server.odoo"
+        chdir: "/home/{{ ansible_user }}/server.odoo"
