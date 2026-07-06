@@ -7,20 +7,32 @@
 
     - name: Check Odoo login page
       ansible.builtin.uri:
-        url: "http://{{ ansible_host }}/web/login"
+        url: "https://{{ ansible_host }}/web/login"
         method: GET
         status_code: 200
         timeout: 10
+        validate_certs: false
         return_content: false
       register: odoo_check
       ignore_errors: true
 
     - name: Add failed server to alert list
       ansible.builtin.set_fact:
-        failed_servers: "{{ hostvars['localhost']['failed_servers'] | default([]) + [inventory_hostname ~ ' (' ~ ansible_host ~ ')'] }}"
+        failed_servers: >-
+          {{
+            hostvars['localhost']['failed_servers'] | default([])
+            + [inventory_hostname ~ ' (' ~ ansible_host ~ ')']
+          }}
       when: odoo_check is failed
       delegate_to: localhost
       delegate_facts: true
+
+    - name: Show failed servers
+      ansible.builtin.debug:
+        var: hostvars['localhost']['failed_servers']
+      delegate_to: localhost
+      run_once: true
+      when: hostvars['localhost']['failed_servers'] is defined
 
     - name: Send email alert
       community.general.mail:
@@ -30,7 +42,7 @@
         password: "{{ lookup('env', 'SMTP_PASSWORD') }}"
         from: "{{ lookup('env', 'SMTP_USER') }}"
         to: "{{ lookup('env', 'ALERT_EMAIL').split(',') }}"
-        subject: "Odoo Monitoring Alert"
+        subject: "🚨 Odoo Monitoring Alert"
         body: |
           The following Odoo servers are unavailable:
 
@@ -39,6 +51,7 @@
           {% endfor %}
 
         secure: starttls
+
       delegate_to: localhost
       run_once: true
       when:
