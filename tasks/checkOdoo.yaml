@@ -23,7 +23,7 @@
         url: "{{ odoo_url }}/web/login"
         method: GET
         status_code: 200
-        validate_certs: true
+        validate_certs: false
         timeout: 10
       register: web_check
 
