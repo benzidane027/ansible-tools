@@ -1,16 +1,16 @@
 ---
-- name: Restart Odoo and Nginx
+- name: restart Odoo and Nginx
   hosts: all
   become: false
   gather_facts: false
 
   tasks:
-    - name: Restart Odoo
+    - name: Start Nginx
       ansible.builtin.command:
         cmd: docker compose restart
-        chdir: "{{ ansible_env.HOME }}/server.odoo"
+        chdir: "/home/{{ ansible_user }}/service.proxy"
 
-    - name: Restart Nginx
+    - name: Start Odoo
       ansible.builtin.command:
         cmd: docker compose restart
-        chdir: "{{ ansible_env.HOME }}/server.proxy"
+        chdir: "/home/{{ ansible_user }}/service.gisb"
