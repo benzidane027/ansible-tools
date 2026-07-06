@@ -56,4 +56,4 @@
       run_once: true
       when:
         - hostvars['localhost']['failed_servers'] is defined
-        - hostvars['localhost']['failed_servers'] | length > 0
+        - hostvars['localhost']['failed_servers'] | length > 0 
