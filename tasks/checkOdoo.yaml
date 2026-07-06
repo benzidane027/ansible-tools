@@ -1,0 +1,38 @@
+---
+- name: Check Odoo servers
+  hosts: all
+  gather_facts: false
+
+  vars:
+    odoo_service: odoo17
+    odoo_url: "http://{{ ansible_host }}/web/login"
+
+  tasks:
+
+    - name: Check SSH connectivity
+      ansible.builtin.ping:
+
+    - name: Check Odoo service
+      ansible.builtin.systemd:
+        name: "{{ odoo_service }}"
+      register: service_status
+
+    - name: Verify Odoo is running
+      ansible.builtin.assert:
+        that:
+          - service_status.status.ActiveState == "active"
+        fail_msg: "Odoo service is not running"
+
+    - name: Check Odoo HTTP endpoint
+      ansible.builtin.uri:
+        url: "{{ odoo_url }}"
+        method: GET
+        status_code: 200
+        timeout: 10
+      register: web_check
+
+    - name: Verify login page contains Odoo
+      ansible.builtin.assert:
+        that:
+          - "'Odoo' in web_check.content"
+        fail_msg: "Odoo web interface is not responding"
