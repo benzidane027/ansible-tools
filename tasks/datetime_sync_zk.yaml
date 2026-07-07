@@ -5,13 +5,10 @@
 
   tasks:
     - name: Ensure pyzk and tzdata are installed (control node)
-      pip:
-        name:
-          - pyzk
-          - tzdata
-        state: present
-      run_once: true
+      command: python3 -m pip install --break-system-packages pyzk tzdata
       delegate_to: localhost
+      run_once: true
+      changed_when: false
 
     - name: Copy sync script to control node working dir
       copy:
