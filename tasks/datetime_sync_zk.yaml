@@ -4,17 +4,21 @@
   gather_facts: false
 
   tasks:
-    - name: Ensure pip is installed (control node)
-      apt:
-        name: python3-pip
-        state: present
-        update_cache: true
+    - name: Create virtualenv for ZKTeco sync
+      command: python3 -m venv /tmp/zk_venv
+      args:
+        creates: /tmp/zk_venv/bin/python3
       delegate_to: localhost
       run_once: true
-      become: true
 
-    - name: Ensure pyzk and tzdata are installed (control node)
-      command: python3 -m pip install --break-system-packages pyzk tzdata
+    - name: Ensure pip is present inside the virtualenv
+      command: /tmp/zk_venv/bin/python3 -m ensurepip --upgrade
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+
+    - name: Install pyzk and tzdata inside virtualenv
+      command: /tmp/zk_venv/bin/pip install pyzk tzdata
       delegate_to: localhost
       run_once: true
       changed_when: false
@@ -28,7 +32,7 @@
 
     - name: Sync device time for {{ inventory_hostname }} ({{ zk_ip }})
       command: >
-        python3 /tmp/sync_zk_time.py {{ zk_ip }} {{ zk_port }} {{ zk_password }}
+        /tmp/zk_venv/bin/python3 /tmp/sync_zk_time.py {{ zk_ip }} {{ zk_port }} {{ zk_password }}
       delegate_to: localhost
       register: zk_result
       changed_when: "'OK' in zk_result.stdout"
