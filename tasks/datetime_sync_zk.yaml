@@ -1,0 +1,33 @@
+---
+- name: Sync ZKTeco device clocks to Algerian time
+  hosts: zkteco_devices
+  gather_facts: false
+
+  tasks:
+    - name: Ensure pyzk and tzdata are installed (control node)
+      pip:
+        name:
+          - pyzk
+          - tzdata
+        state: present
+      run_once: true
+      delegate_to: localhost
+
+    - name: Copy sync script to control node working dir
+      copy:
+        src: python/sync_zk_time.py
+        dest: /tmp/sync_zk_time.py
+        mode: "0755"
+      delegate_to: localhost
+
+    - name: Sync device time for {{ inventory_hostname }} ({{ zk_ip }})
+      command: >
+        python3 /tmp/sync_zk_time.py {{ zk_ip }} {{ zk_port }} {{ zk_password }}
+      delegate_to: localhost
+      register: zk_result
+      changed_when: "'OK' in zk_result.stdout"
+      failed_when: "'FAIL' in zk_result.stdout"
+
+    - name: Show result
+      debug:
+        msg: "{{ zk_result.stdout }}"
