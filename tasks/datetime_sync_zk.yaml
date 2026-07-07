@@ -4,6 +4,15 @@
   gather_facts: false
 
   tasks:
+    - name: Ensure pip is installed (control node)
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: true
+      delegate_to: localhost
+      run_once: true
+      become: true
+
     - name: Ensure pyzk and tzdata are installed (control node)
       command: python3 -m pip install --break-system-packages pyzk tzdata
       delegate_to: localhost
