@@ -1,0 +1,15 @@
+# update_module.yml
+- hosts: all          # broad — actual targeting happens via --limit
+  serial: 1
+  gather_facts: no
+  tasks:
+    - name: Run to_update alias
+      shell: bash -ic "to_update {{ database }} {{ module_name }}"
+      register: result
+
+    - name: Show output
+      debug:
+        var: result.stdout_lines
+
+
+

@@ -4,6 +4,8 @@ services:
     hostname: mysql
     volumes:
       - ./mysql:/var/lib/mysql
+      -  /etc/localtime:/etc/localtime:ro 
+      -  /etc/timezone:/etc/timezone:ro 
     environment:
       MYSQL_ROOT_PASSWORD: "root-password-change-me"
       MYSQL_DATABASE: semaphore
@@ -16,7 +18,7 @@ services:
     image: semaphoreui/semaphore:v2.8.90
     user: "${UID}:${GID}"
     ports:
-      - "3000:3000"
+      - "80:3000"
 
     environment:
       SEMAPHORE_DB_USER: semaphore
@@ -38,6 +40,8 @@ services:
       - ./inventory/:/inventory:ro
       - ./authorized-keys/:/authorized-keys:ro
       - ./config/:/etc/semaphore:rw
+      -  /etc/localtime:/etc/localtime:ro 
+      -  /etc/timezone:/etc/timezone:ro 
 
     restart: unless-stopped
     depends_on:
